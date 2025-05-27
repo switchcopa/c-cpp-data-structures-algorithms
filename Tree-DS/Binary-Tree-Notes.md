@@ -1,5 +1,5 @@
 
-#What is a binary tree?
+What is a binary tree?
 
 > A binary tree is a hierarchical and non-linear data structure that uses 
 nodes as their foundational unit of data. Each node in a binary tree
