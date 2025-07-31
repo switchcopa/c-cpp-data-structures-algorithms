@@ -55,14 +55,111 @@ bool isValidBST(struct TreeNode* root) {
 void insertNode(struct TreeNode** root, struct TreeNode* node_to_insert) {
 	if (*root == NULL) {
 		*root = node_to_insert;
-		(*root)->left = NULL;
-		(*root)->right = NULL;
-		(*root)->data = node_to_insert->data;
-
 		return; 
 	}
+    
+    struct TreeNode* curr = *root; // ???      
+    struct TreeNode* parent = NULL;
 
-	
+    while (curr) {
+        parent = curr; 
+
+        if (curr->data > node_to_insert->data) {
+            curr = curr->left;
+
+        } else {
+            curr = curr->right;
+        }
+    }
+
+   if (parent->data > node_to_insert->data) {
+        parent->left = node_to_insert;
+    } else {
+        parent->right = node_to_insert;
+    }
+}
+
+void insertNode_recursive(struct TreeNode** root, struct TreeNode* node_to_insert) {
+    if (*root == NULL) {
+        *root = node_to_insert;
+        return; 
+    } 
+
+    if ((*root)->data == node_to_insert->data) return;
+
+    if ((*root)->data < node_to_insert->data) {
+        insertNode_recursive(&(*root)->right, node_to_insert); 
+    } else {
+        insertNode_recursive(&(*root)->left, node_to_insert);
+    }
+}
+
+struct TreeNode* searchNode(struct TreeNode* root, int key) {
+    struct TreeNode* found_node = NULL;
+    struct TreeNode* curr = root;
+
+    while (curr) {
+        if (curr->data == key) {
+            found_node = curr; 
+            break;
+    
+        if (curr->data > key) {
+            curr = curr->left;
+        } else curr = curr->right;
+
+    } 
+
+    return found_node;     
+}
+
+void deleteNode(struct TreeNode** root, int key) {
+    if (root == NULL) return;
+
+    struct TreeNode* curr = *root;
+    struct TreeNode* last_parent = curr;
+    struct TreeNode* successor = NULL;
+    
+     
+}
+
+int* returnTree(struct TreeNode* root, int* returnSize) {
+    int* result = malloc(sizeof(int) * MAX_SIZE);  
+    
+    if (root == NULL) {
+        *returnSize = 0;
+        return result;
+    }
+
+    struct TreeNode* stack[MAX_SIZE];
+    int top = -1, count = 0;
+    struct TreeNode* curr = root;
+
+    while (curr || top >= 0) {
+        while (curr != NULL) {
+            stack[++top] = curr;
+            curr = curr->left;
+        }
+
+        curr = stack[top--];
+        result[count++] = curr->data;
+        curr = curr->right;
+
+    }
+
+    *returnSize = count;
+    return result;
+}
+
+void printTree(struct TreeNode* root) {
+    printf("Our Binary Search Tree:\n"); 
+    int returnSize = 0;
+    int* tree_result = returnTree(root, &returnSize);
+
+    for (int i = 0; i < returnSize; i++) {
+        printf("%d ", tree_result[i]);
+    }
+
+    printf("\n");
 }
 
 int main() {
@@ -71,6 +168,8 @@ int main() {
 	root->left->left = createNode(1);
 	root->right = createNode(4);
 	root->right->right = createNode(6);
+    
+    printTree(root);
 
 	bool isBST = isValidBST(root);
 	
@@ -79,6 +178,13 @@ int main() {
 	} else {
 		printf("The tree is NOT a valid binary search tree\n");
 	}
+    
+    struct TreeNode* newnode = createNode(5);
+    printf("Inserting node iteratively with data: %d\n", newnode->data);
+    
+    insertNode_recursive(&root, newnode);
+    printTree(root); 
+     
 	return 0;
 
 }
