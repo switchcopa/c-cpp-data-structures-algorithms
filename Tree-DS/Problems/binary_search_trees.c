@@ -37,7 +37,6 @@ bool isValidBST(struct TreeNode* root) {
 			stack[++top] = curr;
 			curr = curr->left;
 		}
-
 		curr = stack[top--];
 		result[count++] = curr->data;
 		curr = curr->right;
@@ -112,14 +111,74 @@ struct TreeNode* searchNode(struct TreeNode* root, int key) {
     return found_node;     
 }
 
+struct TreeNode* get_leftMostNode(struct TreeNode* node) {
+    struct TreeNode* curr = node;
+
+    while (curr->left) {
+        curr = curr->left;
+    } 
+
+    return curr;
+}
+
+struct TreeNode* findSuccessor(struct TreeNode* root, struct TreeNode* node) {
+    struct TreeNode* successor = NULL;
+    
+    if (root == NULL) return successor; 
+    
+    if (root->data == node->data && root->right) {
+        return get_leftMostNode(root->right);
+    }
+
+    struct TreeNode* curr = root;
+
+    while (curr) {
+        if (node < curr->data) {
+            successor = curr;
+            curr = curr->left;
+        }
+
+        else if (node >= curr->data) {
+            curr = curr->right;
+        }
+
+    }
+
+    return successor;
+}
+
 void deleteNode(struct TreeNode** root, int key) {
     if (root == NULL) return;
 
     struct TreeNode* curr = *root;
-    struct TreeNode* last_parent = curr;
-    struct TreeNode* successor = NULL;
+    struct TreeNode* last_parent = NULL;
     
-     
+    // find the node
+    while (curr) {
+        if (curr->data == key) {   
+            break;
+        }
+        
+        last_parent = curr;
+        if (curr->data > key) {
+            curr = curr->left;
+        } else {
+            curr = curr->right;
+        }
+    }
+    
+    // case 1: the node is a leaf 
+    if (!curr->left && !curr->right) {
+        if (last_parent->left == curr) {
+            last_parent->left = NULL;
+        } else last_parent->right = NULL;
+    }
+
+    // case 2: the node has two child nodes
+    if (curr->left && curr->right) {
+        struct TreeNode* successor = findSuccessor(curr);
+        
+
 }
 
 int* returnTree(struct TreeNode* root, int* returnSize) {
@@ -151,7 +210,7 @@ int* returnTree(struct TreeNode* root, int* returnSize) {
 }
 
 void printTree(struct TreeNode* root) {
-    printf("Our Binary Search Tree:\n"); 
+    printf("Our Binary Search Tree: "); 
     int returnSize = 0;
     int* tree_result = returnTree(root, &returnSize);
 
@@ -186,5 +245,4 @@ int main() {
     printTree(root); 
      
 	return 0;
-
 }
