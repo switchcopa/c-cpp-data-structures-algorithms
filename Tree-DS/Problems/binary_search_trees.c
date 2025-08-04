@@ -7,8 +7,12 @@
 struct TreeNode {
 	struct TreeNode* left;
 	struct TreeNode* right;
-	int data;
-} TreeNode;
+	int data; } TreeNode;
+
+struct Pair {
+    struct TreeNode* first_node;
+    struct TreeNode* second_node;
+} Pair;
 
 struct TreeNode* createNode(int data) {
 	struct TreeNode* newnode = malloc(sizeof(struct TreeNode));
@@ -19,10 +23,30 @@ struct TreeNode* createNode(int data) {
 	} 
 
 	newnode->left = NULL;
-	newnode->right =  NULL;
+	newnode->right = NULL;
 	newnode->data = data;
 
 	return newnode;
+}
+
+struct Pair* createPair(struct TreeNode* node1, struct TreeNode* node2) {
+    struct Pair* pair = malloc(sizeof(struct Pair));
+
+    if (!pair) {
+        printf("Failed to allocate memory for pair\n");
+        exit(1);
+    }
+
+    pair->first_node = node1;
+    pair->second_node = node2;
+
+    return pair;
+}
+
+void swapValues(struct TreeNode* node1, struct TreeNode* node2) {
+    int temp = node1->data;
+    node1->data = node2->data;
+    node2->data = temp;
 }
 
 bool isValidBST(struct TreeNode* root) {
@@ -63,7 +87,7 @@ void insertNode(struct TreeNode** root, struct TreeNode* node_to_insert) {
     while (curr) {
         parent = curr; 
 
-        if (curr->data > node_to_insert->data) {
+      if (curr->data > node_to_insert->data) {
             curr = curr->left;
 
         } else {
@@ -101,7 +125,7 @@ struct TreeNode* searchNode(struct TreeNode* root, int key) {
         if (curr->data == key) {
             found_node = curr; 
             break;
-    
+        } 
         if (curr->data > key) {
             curr = curr->left;
         } else curr = curr->right;
@@ -133,52 +157,109 @@ struct TreeNode* findSuccessor(struct TreeNode* root, struct TreeNode* node) {
     struct TreeNode* curr = root;
 
     while (curr) {
-        if (node < curr->data) {
+        if (node->data < curr->data) {
             successor = curr;
             curr = curr->left;
         }
 
-        else if (node >= curr->data) {
+        else if (node->data >= curr->data) {
             curr = curr->right;
         }
 
+        else break;
     }
 
     return successor;
 }
 
+struct TreeNode* findPredecessor(struct TreeNode* root, struct TreeNode* node) {
+    struct TreeNode* predecessor = NULL;
+    struct TreeNode* curr = root;
+
+    if (node->left) {
+        node = node->left;
+
+        while (node && node->right) {
+            node = node->right;
+        }
+            
+        predecessor = node;
+    } else {
+        while (curr) {
+            if (curr->data < node->data) {
+                  predecessor = curr;
+                  curr = curr->right;
+            } else {
+                curr = curr->left; 
+            }
+        } 
+    }
+    
+    return predecessor;
+}
+
+struct Pair* findNodeAndItsParent(struct TreeNode* root, int key) {
+    struct TreeNode* curr = root;
+    struct TreeNode* parent = NULL;
+
+    while (curr) {
+        if (curr->data == key) {
+            break;
+        }
+
+        parent = curr;
+        if (curr->data > key) {
+            curr = curr->left;
+        } else curr = curr->right;
+    }
+
+    struct Pair* pair = createPair(curr, parent);
+    return pair;
+}
+
+void deleteNodeWithOneChild(struct TreeNode** root, struct TreeNode* node, struct TreeNode* parent) { 
+    if (!node) return;
+
+    struct TreeNode* child = node->left ? node->left : node->right;
+
+    if (!parent) {
+        *root = child;
+    } else if (parent->left == node) { 
+        parent->left = child;
+    } else {
+        parent->right = child;
+    }
+
+    free(node);
+}
+
+void deleteChildNode(struct TreeNode* parent);
+
 void deleteNode(struct TreeNode** root, int key) {
     if (root == NULL) return;
 
-    struct TreeNode* curr = *root;
-    struct TreeNode* last_parent = NULL;
     
     // find the node
-    while (curr) {
-        if (curr->data == key) {   
-            break;
-        }
-        
-        last_parent = curr;
-        if (curr->data > key) {
-            curr = curr->left;
-        } else {
-            curr = curr->right;
-        }
-    }
+    struct Pair* nodeAndItsParent = findNodeAndItsParent(*root, key);
+    struct TreeNode* curr = nodeAndItsParent->first_node;
+    struct TreeNode* last_parent = nodeAndItsParent->second_node;
     
     // case 1: the node is a leaf 
     if (!curr->left && !curr->right) {
-        if (last_parent->left == curr) {
-            last_parent->left = NULL;
-        } else last_parent->right = NULL;
+        deleteChildNode(last_parent);
     }
 
     // case 2: the node has two child nodes
     if (curr->left && curr->right) {
-        struct TreeNode* successor = findSuccessor(curr);
-        
+        struct TreeNode* successor = findSuccessor(*root, curr);
+            
+        swapValues(curr, successor);
+        deleteNode(&(curr->right), key);
+    }   
 
+    else {
+        deleteNodeWithOneChild(root, curr, last_parent);
+    }
 }
 
 int* returnTree(struct TreeNode* root, int* returnSize) {
