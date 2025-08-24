@@ -191,7 +191,7 @@ void freeHashTable(struct HashTable* table)
 int main() {
     struct HashTable* table = initHashTable(10);
     insert(&table, "Hello", 5);
-    insert(&table, "nigga", 1);
+    insert(&table, "Neighbor", 1);
     insert(&table, "ni", 3);
     insert(&table, "sheep", 7);
     insert(&table, "television", 10);
